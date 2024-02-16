@@ -271,6 +271,71 @@ func (o *Cook) CreateRecipe(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusCreated)
 }
 
+func (o *Cook) ListRecipeByCategory(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Category    string `json:"category"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	recipe := model.Recipe{
+		Category:    body.Category,
+	}
+	recipe1,err := o.Repo.RecipeByCategory(recipe)
+	if err != nil {
+		fmt.Println("failder to find all recipe")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var response struct {
+		Recipe []model.Recipe `json:"recipe"`
+	}
+	response.Recipe = recipe1
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("failed Marshal recipe:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+}
+
+func (o *Cook) ListRecipeByTag(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Tag    string `json:"tag"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	recipe := model.Recipe{
+		Tag:    body.Tag,
+	}
+	recipe1,err := o.Repo.RecipeByTag(recipe)
+	if err != nil {
+		fmt.Println("failder to find all recipe")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var response struct {
+		Recipe []model.Recipe `json:"recipe"`
+	}
+	response.Recipe = recipe1
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("failed Marshal recipe:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+}
+
+
 
 func (o *Cook) FindByEmail(w http.ResponseWriter, r *http.Request) {
 	var body struct {
@@ -416,6 +481,40 @@ func (o *Cook) RecipeByID(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("failed to marshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+
+
+func (o *Cook) ListRecipeByUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ListRecipeByUser")
+	idParam := chi.URLParam(r, "id")
+
+	const base = 10
+	const bitSize = 64
+	UserID, err := strconv.ParseUint(idParam, base, bitSize)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	res, err := o.Repo.RecipeByUserId(uint(UserID))
+	if err != nil {
+		fmt.Println("failder to find all recipe")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var response struct {
+		Recipe []model.Recipe `json:"recipe"`
+	}
+	response.Recipe = res
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("failed Marshal recipe:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
 }
 
 func (o *Cook) GetByEmail(w http.ResponseWriter, r *http.Request) {

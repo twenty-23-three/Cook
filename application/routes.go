@@ -53,4 +53,7 @@ func (a *App) loadRecipeRoutes(router chi.Router) {
 	router.Post("/uploadrecipe",recipeHandler.UploadImageRecipes)
 	router.Post("/NameFind",recipeHandler.FindByName)
 	router.Get("/{id}",recipeHandler.RecipeByID)
+	router.Post("/{id}",recipeHandler.ListRecipeByUser)
+	router.Post("/category",recipeHandler.ListRecipeByCategory)
+	router.Post("/tag",recipeHandler.ListRecipeByTag)
 }
