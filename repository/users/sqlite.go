@@ -1,10 +1,10 @@
 package users
 
 import (
+	"cookvs/model"
 	"database/sql"
 	"fmt"
 	"math/rand"
-	"cookvs/model"
 )
 
 type SqlRepo struct {
@@ -18,9 +18,6 @@ func RandomImagePath() string {
 	return fmt.Sprintf("http://localhost:3000/assets/images/%v.png", img)
 }
 
-
-
-
 func (r *SqlRepo) Insert(user model.User) error {
 	statement, err := r.DB.Prepare(`INSERT INTO ` + "`users`" + ` (
 		image,
@@ -31,7 +28,7 @@ func (r *SqlRepo) Insert(user model.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to prepare insert user: %w", err)
 	}
-	_, err = statement.Exec(user.Image, user.Email, user.Password, user.NickName,user.BornDate)
+	_, err = statement.Exec(user.Image, user.Email, user.Password, user.NickName, user.BornDate)
 	if err != nil {
 		return fmt.Errorf("failed to insert user: %w", err)
 
@@ -40,11 +37,10 @@ func (r *SqlRepo) Insert(user model.User) error {
 	return nil
 }
 
-
-func (r *SqlRepo) CheckEmail(user model.User) (*model.User,error) {
+func (r *SqlRepo) CheckEmail(user model.User) (*model.User, error) {
 	model_user := model.User{}
-	rows, err := r.DB.Query(`SELECT * FROM` + "`users`" + `
-	WHERE email = ?`,user.Email)
+	rows, err := r.DB.Query(`SELECT * FROM`+"`users`"+`
+	WHERE email = ?`, user.Email)
 	if err != nil {
 		return &model_user, fmt.Errorf("failed to prepare find user: %w", err)
 	}
@@ -53,16 +49,15 @@ func (r *SqlRepo) CheckEmail(user model.User) (*model.User,error) {
 		rows.Scan(&model_user.UserID, &model_user.Image, &model_user.Email, &model_user.Password, &model_user.NickName, &model_user.BornDate)
 		return &model_user, nil
 	}
-	
-	return nil,nil
+
+	return nil, nil
 
 }
 
-
-func (r *SqlRepo) Login(user model.User) (*model.User,error) {
+func (r *SqlRepo) Login(user model.User) (*model.User, error) {
 	model_user := model.User{}
-	rows, err := r.DB.Query(`SELECT * FROM` + "`users`" + `
-	WHERE email = ? AND password =?`,user.Email,user.Password)
+	rows, err := r.DB.Query(`SELECT * FROM`+"`users`"+`
+	WHERE email = ? AND password =?`, user.Email, user.Password)
 	if err != nil {
 		return &model_user, fmt.Errorf("failed to prepare find user: %w", err)
 	}
@@ -71,11 +66,10 @@ func (r *SqlRepo) Login(user model.User) (*model.User,error) {
 		rows.Scan(&model_user.UserID, &model_user.Image, &model_user.Email, &model_user.Password, &model_user.NickName, &model_user.BornDate)
 		return &model_user, nil
 	}
-	
-	return nil,nil
+
+	return nil, nil
 
 }
-
 
 func (r *SqlRepo) FindById(user_id uint) (model.User, error) {
 	model_user := model.User{}
@@ -87,6 +81,8 @@ func (r *SqlRepo) FindById(user_id uint) (model.User, error) {
 	for rows.Next() {
 		rows.Scan(&model_user.UserID, &model_user.Image, &model_user.Email, &model_user.Password, &model_user.NickName, &model_user.BornDate)
 	}
+	
+	
 	return model_user, nil
 }
 
@@ -138,7 +134,6 @@ func (r *SqlRepo) FindAll() ([]model.User, error) {
 	return array, nil
 }
 
-
 func (r *SqlRepo) InsertRecipe(recipe model.Recipe) error {
 	statement, err := r.DB.Prepare(`INSERT INTO ` + "`recipes`" + ` (
 		user_id,
@@ -151,7 +146,7 @@ func (r *SqlRepo) InsertRecipe(recipe model.Recipe) error {
 	if err != nil {
 		return fmt.Errorf("failed to prepare insert recipe: %w", err)
 	}
-	_, err = statement.Exec(recipe.UserID,recipe.Name,recipe.Image,recipe.MarshalDescription(),recipe.MarshalProducts(),recipe.Category,recipe.Tag)
+	_, err = statement.Exec(recipe.UserID, recipe.Name, recipe.Image, recipe.MarshalDescription(), recipe.MarshalProducts(), recipe.Category, recipe.Tag)
 	if err != nil {
 		return fmt.Errorf("failed to insert recipe: %w", err)
 
@@ -171,9 +166,9 @@ func (r *SqlRepo) FindAllRecipe() ([]model.Recipe, error) {
 
 	for rows.Next() {
 		model_recipe := model.Recipe{}
-		products :=""
-		description:=""
-		rows.Scan(&model_recipe.RecipeID,&model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
+		products := ""
+		description := ""
+		rows.Scan(&model_recipe.RecipeID, &model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
 		model_recipe.UnmarshalSteps(description)
 		model_recipe.UnmarshalProducts(products)
 		array = append(array, model_recipe)
@@ -181,10 +176,10 @@ func (r *SqlRepo) FindAllRecipe() ([]model.Recipe, error) {
 	return array, nil
 }
 
-func (r *SqlRepo)  FindByName(recipe model.Recipe) ([]model.Recipe,error) {
+func (r *SqlRepo) FindByName(recipe model.Recipe) ([]model.Recipe, error) {
 	array := []model.Recipe{}
 	var stroka string
-	if (recipe.Name != "") {
+	if recipe.Name != "" {
 		stroka = `SELECT * FROM recipes WHERE name LIKE '` + recipe.Name + `%';`
 	} else {
 		stroka = `SELECT * FROM recipes;`
@@ -197,15 +192,15 @@ func (r *SqlRepo)  FindByName(recipe model.Recipe) ([]model.Recipe,error) {
 
 	for rows.Next() {
 		model_recipe := model.Recipe{}
-		description:=""
-		products :=""
-		rows.Scan(&model_recipe.RecipeID,&model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products,&model_recipe.Category ,&model_recipe.Tag)
+		description := ""
+		products := ""
+		rows.Scan(&model_recipe.RecipeID, &model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
 		model_recipe.UnmarshalSteps(description)
 		model_recipe.UnmarshalProducts(products)
 		array = append(array, model_recipe)
 	}
-	
-	return array,nil
+
+	return array, nil
 
 }
 func (r *SqlRepo) RecipeByCategory(recipe model.Recipe) ([]model.Recipe, error) {
@@ -219,15 +214,15 @@ func (r *SqlRepo) RecipeByCategory(recipe model.Recipe) ([]model.Recipe, error) 
 
 	for rows.Next() {
 		model_recipe := model.Recipe{}
-		description:=""
-		products :=""
-		rows.Scan(&model_recipe.RecipeID,&model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products,&model_recipe.Category ,&model_recipe.Tag)
+		description := ""
+		products := ""
+		rows.Scan(&model_recipe.RecipeID, &model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
 		model_recipe.UnmarshalSteps(description)
 		model_recipe.UnmarshalProducts(products)
 		array = append(array, model_recipe)
 	}
-	
-	return array,nil
+
+	return array, nil
 }
 
 func (r *SqlRepo) RecipeByTag(recipe model.Recipe) ([]model.Recipe, error) {
@@ -241,20 +236,20 @@ func (r *SqlRepo) RecipeByTag(recipe model.Recipe) ([]model.Recipe, error) {
 
 	for rows.Next() {
 		model_recipe := model.Recipe{}
-		description:=""
-		products :=""
-		rows.Scan(&model_recipe.RecipeID,&model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products,&model_recipe.Category ,&model_recipe.Tag)
+		description := ""
+		products := ""
+		rows.Scan(&model_recipe.RecipeID, &model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
 		model_recipe.UnmarshalSteps(description)
 		model_recipe.UnmarshalProducts(products)
 		array = append(array, model_recipe)
 	}
-	
-	return array,nil
+
+	return array, nil
 }
 
 func (r *SqlRepo) RecipeById(recipe_id uint) (model.Recipe, error) {
 	model_recipe := model.Recipe{}
-	rows, err := r.DB.Query(`SELECT * FROM ` + "`recipes`" + ` WHERE recipe_id = ?`, recipe_id)
+	rows, err := r.DB.Query(`SELECT * FROM `+"`recipes`"+` WHERE recipe_id = ?`, recipe_id)
 	if err != nil {
 		return model_recipe, fmt.Errorf("failed to prepare find user: %w", err)
 	}
@@ -285,21 +280,19 @@ func (r *SqlRepo) RecipeById(recipe_id uint) (model.Recipe, error) {
 func (r *SqlRepo) RecipeByUserId(user_id uint) ([]model.Recipe, error) {
 	array := []model.Recipe{}
 
-	rows, err := r.DB.Query(`SELECT * FROM ` + "`recipes`" + ` WHERE user_id = ? ORDER BY name`, user_id)
+	rows, err := r.DB.Query(`SELECT * FROM `+"`recipes`"+` WHERE user_id = ? ORDER BY name`, user_id)
 	if err != nil {
 		return []model.Recipe{}, fmt.Errorf("failed to prepare FindAll recipe: %w", err)
 	}
 
 	for rows.Next() {
 		model_recipe := model.Recipe{}
-		products :=""
-		description:=""
-		rows.Scan(&model_recipe.RecipeID,&model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
+		products := ""
+		description := ""
+		rows.Scan(&model_recipe.RecipeID, &model_recipe.UserID, &model_recipe.Name, &model_recipe.Image, &description, &products, &model_recipe.Category, &model_recipe.Tag)
 		model_recipe.UnmarshalSteps(description)
 		model_recipe.UnmarshalProducts(products)
 		array = append(array, model_recipe)
 	}
 	return array, nil
 }
-
-

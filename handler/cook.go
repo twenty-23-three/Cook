@@ -79,7 +79,6 @@ func (o *Cook) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	
 	user := model.User{
 		Image:		body.Image,
 		NickName: 	body.NickName,
@@ -132,34 +131,35 @@ if err != nil {
 fmt.Println("Файл успешно загружен на сервер.")
 }
 
-func (o *Cook)  UploadImageRecipes(w http.ResponseWriter, r *http.Request){
-	file, handler, err := r.FormFile("file")
-if err != nil {
-    fmt.Println("Ошибка при получении файла:", err)
-    return
-}
-defer file.Close()
+func (o *Cook) UploadImageRecipes(w http.ResponseWriter, r *http.Request) {
+    file, handler, err := r.FormFile("file")
+    if err != nil {
+        http.Error(w, "Ошибка при получении файла", http.StatusBadRequest)
+        return
+    }
+    defer file.Close()
 
-// Указание пути для сохранения файла в папке "uploads"
-uploadPath := "./assets/recipes/"
-os.MkdirAll(uploadPath, os.ModePerm) // Создаем папку, если её нет
+    // Указание пути для сохранения файла в папке "uploads"
+    uploadPath := "./assets/recipes/"
+    os.MkdirAll(uploadPath, os.ModePerm) // Создаем папку, если её нет
 
-// Создание нового файла на сервере
-f, err := os.OpenFile(uploadPath+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-if err != nil {
-    fmt.Println("Ошибка при создании файла:", err)
-    return
-}
-defer f.Close()
+    // Создание нового файла на сервере
+    f, err := os.OpenFile(uploadPath+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+    if err != nil {
+        http.Error(w, "Ошибка при создании файла", http.StatusInternalServerError)
+        return
+    }
+    defer f.Close()
 
-// Копирование содержимого файла в созданный файл на сервере
-_, err = io.Copy(f, file)
-if err != nil {
-    fmt.Println("Ошибка при копировании файла:", err)
-    return
-}
+    // Копирование содержимого файла в созданный файл на сервере
+    _, err = io.Copy(f, file)
+    if err != nil {
+        http.Error(w, "Ошибка при копировании файла", http.StatusInternalServerError)
+        return
+    }
 
-fmt.Println("Файл успешно загружен на сервер.")
+    fmt.Println("Файл успешно загружен на сервер.")
+    w.WriteHeader(http.StatusOK)
 }
 
 
@@ -368,6 +368,7 @@ func (o *Cook) FindByEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(res)
+	
 }
 
 func (o *Cook) Create(w http.ResponseWriter, r *http.Request) {
