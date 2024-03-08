@@ -81,8 +81,7 @@ func (r *SqlRepo) FindById(user_id uint) (model.User, error) {
 	for rows.Next() {
 		rows.Scan(&model_user.UserID, &model_user.Image, &model_user.Email, &model_user.Password, &model_user.NickName, &model_user.BornDate)
 	}
-	
-	
+
 	return model_user, nil
 }
 
@@ -100,17 +99,16 @@ func (r *SqlRepo) DeleteById(user_id uint) error {
 
 }
 
-func (r *SqlRepo) Update(model_user model.User) error {
+func (r *SqlRepo) Update(user_id uint, model_user model.User) error {
 
 	statement, err := r.DB.Prepare(`UPDATE ` + "`users`" + ` SET
 		image = ?,
         nickname = ?,
-        borndate = ?
 		WHERE user_id = ?`)
 	if err != nil {
 		return fmt.Errorf("failed to prepare update user: %w", err)
 	}
-	_, err = statement.Exec(model_user.Image, model_user.NickName, model_user.BornDate, model_user.UserID)
+	_, err = statement.Exec(model_user.Image, model_user.NickName, model_user.BornDate, user_id)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}

@@ -67,34 +67,25 @@ func (o *Cook) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	const base = 10
 	const bitSize = 64
 
-	cookId, err := strconv.ParseUint(idParam, base, bitSize)
+	userid, err := strconv.ParseUint(idParam, base, bitSize)
 	if err != nil {
     w.WriteHeader(http.StatusBadRequest)
     return
-	}
-
-	Cook, err := o.Repo.FindById(uint(cookId))
-	if err != nil {
-		fmt.Println("failed to find by id:", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 	user := model.User{
 		Image:		body.Image,
 		NickName: 	body.NickName,
 	}
 
-	Cook.Image = user.Image
-	Cook.NickName = user.NickName
 
-	err = o.Repo.Update(Cook)
+	err = o.Repo.Update(uint(userid),user)
 	if err != nil {
 		fmt.Println("failed to update", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(Cook); err != nil {
+	if err := json.NewEncoder(w).Encode(user); err != nil {
 		fmt.Println("failed to marshal", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
